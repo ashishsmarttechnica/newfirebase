@@ -1,3 +1,4 @@
+
 'use client';
 
 import type { UploadedFile } from '@/lib/types';
@@ -59,9 +60,12 @@ export function FileItem({ uploadedFile, onSmartRename, onRemoveFile }: FileItem
 
 
   const handleShare = () => {
-    // Placeholder: Generate a dummy share URL
-    const dummyUrl = `${window.location.origin}/share/${uploadedFile.id}/${uploadedFile.newName || uploadedFile.originalName}`;
-    navigator.clipboard.writeText(dummyUrl)
+    const filenameToShare = uploadedFile.newName || uploadedFile.originalName;
+    // Ensure filename is properly encoded for URL
+    const encodedFilename = encodeURIComponent(filenameToShare);
+    const shareUrl = `${window.location.origin}/share/${uploadedFile.id}/${encodedFilename}`;
+    
+    navigator.clipboard.writeText(shareUrl)
       .then(() => {
         toast({
           title: 'Link Copied!',
