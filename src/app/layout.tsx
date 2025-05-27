@@ -1,3 +1,4 @@
+
 import type {Metadata} from 'next';
 import {Geist, Geist_Mono} from 'next/font/google';
 import './globals.css';
@@ -15,8 +16,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: 'FileDrop',
-  description: 'Share files seamlessly over your local network.',
+  title: 'LAN File Transfer',
+  description: 'Peer-to-peer file sharing on your local network using WebRTC.',
 };
 
 export default function RootLayout({

@@ -1,63 +1,44 @@
 
 'use client';
 
-import type { UploadedFile } from '@/lib/types';
-import { useState } from 'react';
-import { Header } from '@/components/header';
-import { FileDropzone } from '@/components/file-dropzone';
-import { FileList } from '@/components/file-list';
-import { Button } from '@/components/ui/button';
-// import { getFileContentSummary, getDescriptiveFileType } from '@/lib/utils'; // Not needed for smart rename anymore
-import { useToast } from '@/hooks/use-toast';
-// import type { SmartRenameOutput } from '@/ai/flows/smart-rename'; // Smart rename removed
+import { Header } from '@/components/header'; // Keep header for theme toggle etc.
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { SenderView } from '@/components/sender-view';
+import { ReceiverView } from '@/components/receiver-view';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 
 export default function HomePage() {
-  const [files, setFiles] = useState<UploadedFile[]>([]);
-  const { toast } = useToast();
-
-  const handleFilesAdded = async (newFiles: UploadedFile[]) => {
-    setFiles((prevFiles) => [...prevFiles, ...newFiles]);
-    toast({
-      title: `${newFiles.length} file(s) added!`,
-      description: "Files are added to the local list.",
-    });
-
-    // Server upload logic removed
-  };
-
-  // Smart Rename functionality removed
-  // const handleSmartRename = async (fileId: string) => { ... }
-
-  const handleRemoveFile = (fileId: string) => {
-    setFiles((prevFiles) => prevFiles.filter((f) => f.id === fileId));
-    toast({
-      title: 'File Removed',
-      description: 'The file has been removed from this list.',
-    });
-  };
-
   return (
     <div className="flex min-h-screen flex-col">
-      <Header />
-      <main className="flex-grow container mx-auto px-4 py-8 sm:px-6 lg:px-8">
-        <section aria-labelledby="file-upload-section">
-          <h2 id="file-upload-section" className="sr-only">File Upload</h2>
-          <FileDropzone onFilesAdded={handleFilesAdded} className="mb-8" />
-        </section>
-
-        {files.length > 0 && (
-          <div className="mb-6 flex justify-end">
-            <Button variant="destructive" onClick={() => setFiles([])}>Clear All Files</Button>
-          </div>
-        )}
-
-        <section aria-labelledby="uploaded-files-section">
-          <h2 id="uploaded-files-section" className="sr-only">Uploaded Files</h2>
-          <FileList files={files} onRemoveFile={handleRemoveFile} />
-        </section>
+      <Header /> 
+      <main className="flex-grow container mx-auto px-4 py-8 sm:px-6 lg:px-8 flex flex-col items-center justify-start pt-12">
+        <Card className="w-full max-w-2xl shadow-xl">
+          <CardHeader className="text-center bg-muted/30">
+            <CardTitle className="text-3xl font-bold text-foreground">
+              LAN File Transfer
+            </CardTitle>
+            <CardDescription>
+              Share files directly with others on the same network using WebRTC.
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="p-6">
+            <Tabs defaultValue="send" className="w-full">
+              <TabsList className="grid w-full grid-cols-2 mb-6">
+                <TabsTrigger value="send">Send File</TabsTrigger>
+                <TabsTrigger value="receive">Receive File</TabsTrigger>
+              </TabsList>
+              <TabsContent value="send">
+                <SenderView />
+              </TabsContent>
+              <TabsContent value="receive">
+                <ReceiverView />
+              </TabsContent>
+            </Tabs>
+          </CardContent>
+        </Card>
       </main>
       <footer className="py-6 text-center text-sm text-muted-foreground border-t">
-        © {new Date().getFullYear()} FileDrop. All rights reserved.
+        © {new Date().getFullYear()} LAN File Transfer. Peer-to-peer.
       </footer>
     </div>
   );
