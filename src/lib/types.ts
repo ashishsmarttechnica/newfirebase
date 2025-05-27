@@ -1,13 +1,14 @@
+
 export interface UploadedFile {
   id: string;
   file: File;
   originalName: string;
-  newName?: string;
+  // newName?: string; // Feature removed
   size: number;
   type: string; // MIME Type
   previewUrl?: string; // For image previews
-  contentSummaryForAI?: string; // Content summary prepared for AI
-  isRenaming?: boolean;
-  isShared?: boolean; // Placeholder for share status
-  shareUrl?: string; // Placeholder for share URL
+  // contentSummaryForAI?: string; // Feature removed
+  // isRenaming?: boolean; // Feature removed
+  // isShared?: boolean; // Feature removed
+  // shareUrl?: string; // Feature removed
 }

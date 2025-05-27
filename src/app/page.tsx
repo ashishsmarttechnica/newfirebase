@@ -7,9 +7,9 @@ import { Header } from '@/components/header';
 import { FileDropzone } from '@/components/file-dropzone';
 import { FileList } from '@/components/file-list';
 import { Button } from '@/components/ui/button';
-import { getFileContentSummary, getDescriptiveFileType } from '@/lib/utils';
+// import { getFileContentSummary, getDescriptiveFileType } from '@/lib/utils'; // Not needed for smart rename anymore
 import { useToast } from '@/hooks/use-toast';
-import type { SmartRenameOutput } from '@/ai/flows/smart-rename';
+// import type { SmartRenameOutput } from '@/ai/flows/smart-rename'; // Smart rename removed
 
 export default function HomePage() {
   const [files, setFiles] = useState<UploadedFile[]>([]);
@@ -19,105 +19,17 @@ export default function HomePage() {
     setFiles((prevFiles) => [...prevFiles, ...newFiles]);
     toast({
       title: `${newFiles.length} file(s) added!`,
-      description: "Ready for renaming or sharing. Uploading to server...",
+      description: "Files are added to the local list.",
     });
 
-    // Upload each file to the server
-    for (const uploadedFile of newFiles) {
-      const formData = new FormData();
-      formData.append('file', uploadedFile.file);
-      formData.append('fileId', uploadedFile.id);
-
-      try {
-        const response = await fetch('/api/files', {
-          method: 'POST',
-          body: formData,
-        });
-        if (!response.ok) {
-          const errorData = await response.json();
-          console.error(`Failed to upload ${uploadedFile.originalName}: ${errorData.details || errorData.error}`);
-          toast({
-            variant: 'destructive',
-            title: `Upload Failed for ${uploadedFile.originalName}`,
-            description: errorData.details || errorData.error || 'Could not upload file to server.',
-          });
-        } else {
-          // console.log(`${uploadedFile.originalName} uploaded successfully to server.`);
-           toast({
-            title: 'Upload Successful',
-            description: `"${uploadedFile.originalName}" is now available for sharing.`,
-          });
-        }
-      } catch (error) {
-        console.error(`Error uploading ${uploadedFile.originalName}:`, error);
-        toast({
-          variant: 'destructive',
-          title: `Upload Error for ${uploadedFile.originalName}`,
-          description: error instanceof Error ? error.message : 'Network error or server unavailable.',
-        });
-      }
-    }
+    // Server upload logic removed
   };
 
-  const handleSmartRename = async (fileId: string) => {
-    const fileIndex = files.findIndex((f) => f.id === fileId);
-    if (fileIndex === -1) return;
+  // Smart Rename functionality removed
+  // const handleSmartRename = async (fileId: string) => { ... }
 
-    const targetFile = files[fileIndex];
-
-    setFiles((prevFiles) =>
-      prevFiles.map((f) => (f.id === fileId ? { ...f, isRenaming: true } : f))
-    );
-
-    try {
-      const contentSummary = await getFileContentSummary(targetFile.file);
-      const descriptiveFileType = getDescriptiveFileType(targetFile.type);
-      
-      setFiles(prev => prev.map(f => f.id === fileId ? {...f, contentSummaryForAI: contentSummary} : f));
-
-      const response = await fetch('/api/smart-rename', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          fileName: targetFile.originalName,
-          fileType: descriptiveFileType,
-          fileContentSummary: contentSummary,
-        }),
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || 'Failed to rename file');
-      }
-
-      const result = await response.json() as SmartRenameOutput;
-
-      setFiles((prevFiles) =>
-        prevFiles.map((f) =>
-          f.id === fileId ? { ...f, newName: result.newFileName, isRenaming: false } : f
-        )
-      );
-      toast({
-        title: 'File Renamed!',
-        description: `"${targetFile.originalName}" renamed to "${result.newFileName}".`,
-      });
-    } catch (error) {
-      console.error('Smart rename failed:', error);
-      setFiles((prevFiles) =>
-        prevFiles.map((f) => (f.id === fileId ? { ...f, isRenaming: false } : f))
-      );
-      toast({
-        variant: 'destructive',
-        title: 'Rename Failed',
-        description: error instanceof Error ? error.message : 'Could not rename file.',
-      });
-    }
-  };
-  
   const handleRemoveFile = (fileId: string) => {
-    // Note: We are not calling removeFileFromStore here to keep prototype simple.
-    // In a real app, you'd want to notify the server to free up resources.
-    setFiles((prevFiles) => prevFiles.filter((f) => f.id !== fileId));
+    setFiles((prevFiles) => prevFiles.filter((f) => f.id === fileId));
     toast({
       title: 'File Removed',
       description: 'The file has been removed from this list.',
@@ -132,7 +44,7 @@ export default function HomePage() {
           <h2 id="file-upload-section" className="sr-only">File Upload</h2>
           <FileDropzone onFilesAdded={handleFilesAdded} className="mb-8" />
         </section>
-        
+
         {files.length > 0 && (
           <div className="mb-6 flex justify-end">
             <Button variant="destructive" onClick={() => setFiles([])}>Clear All Files</Button>
@@ -141,7 +53,7 @@ export default function HomePage() {
 
         <section aria-labelledby="uploaded-files-section">
           <h2 id="uploaded-files-section" className="sr-only">Uploaded Files</h2>
-          <FileList files={files} onSmartRename={handleSmartRename} onRemoveFile={handleRemoveFile} />
+          <FileList files={files} onRemoveFile={handleRemoveFile} />
         </section>
       </main>
       <footer className="py-6 text-center text-sm text-muted-foreground border-t">
