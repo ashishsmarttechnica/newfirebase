@@ -1,3 +1,4 @@
+
 'use client';
 
 import type { UploadedFile } from '@/lib/types';
@@ -14,12 +15,48 @@ export default function HomePage() {
   const [files, setFiles] = useState<UploadedFile[]>([]);
   const { toast } = useToast();
 
-  const handleFilesAdded = (newFiles: UploadedFile[]) => {
+  const handleFilesAdded = async (newFiles: UploadedFile[]) => {
     setFiles((prevFiles) => [...prevFiles, ...newFiles]);
     toast({
       title: `${newFiles.length} file(s) added!`,
-      description: "Ready for renaming or sharing.",
+      description: "Ready for renaming or sharing. Uploading to server...",
     });
+
+    // Upload each file to the server
+    for (const uploadedFile of newFiles) {
+      const formData = new FormData();
+      formData.append('file', uploadedFile.file);
+      formData.append('fileId', uploadedFile.id);
+
+      try {
+        const response = await fetch('/api/files', {
+          method: 'POST',
+          body: formData,
+        });
+        if (!response.ok) {
+          const errorData = await response.json();
+          console.error(`Failed to upload ${uploadedFile.originalName}: ${errorData.details || errorData.error}`);
+          toast({
+            variant: 'destructive',
+            title: `Upload Failed for ${uploadedFile.originalName}`,
+            description: errorData.details || errorData.error || 'Could not upload file to server.',
+          });
+        } else {
+          // console.log(`${uploadedFile.originalName} uploaded successfully to server.`);
+           toast({
+            title: 'Upload Successful',
+            description: `"${uploadedFile.originalName}" is now available for sharing.`,
+          });
+        }
+      } catch (error) {
+        console.error(`Error uploading ${uploadedFile.originalName}:`, error);
+        toast({
+          variant: 'destructive',
+          title: `Upload Error for ${uploadedFile.originalName}`,
+          description: error instanceof Error ? error.message : 'Network error or server unavailable.',
+        });
+      }
+    }
   };
 
   const handleSmartRename = async (fileId: string) => {
@@ -78,10 +115,12 @@ export default function HomePage() {
   };
   
   const handleRemoveFile = (fileId: string) => {
+    // Note: We are not calling removeFileFromStore here to keep prototype simple.
+    // In a real app, you'd want to notify the server to free up resources.
     setFiles((prevFiles) => prevFiles.filter((f) => f.id !== fileId));
     toast({
       title: 'File Removed',
-      description: 'The file has been removed from the list.',
+      description: 'The file has been removed from this list.',
     });
   };
 
