@@ -12,7 +12,7 @@ export async function GET(
       return NextResponse.json({ error: 'File ID is required' }, { status: 400 });
     }
 
-    const storedFile = getFileFromStore(fileId);
+    const storedFile = await getFileFromStore(fileId);
 
     if (!storedFile) {
       return NextResponse.json({ error: 'File not found or may have been cleared from server memory.' }, { status: 404 });

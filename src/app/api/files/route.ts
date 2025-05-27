@@ -14,7 +14,7 @@ export async function POST(request: NextRequest) {
 
     const fileBuffer = Buffer.from(await file.arrayBuffer());
 
-    addFileToStore({
+    await addFileToStore({
       id: fileId,
       fileName: file.name,
       mimeType: file.type,
